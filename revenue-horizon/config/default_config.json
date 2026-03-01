@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "project_name": "Revenue Horizon",
+    "version": "1.0.0",
+    "description": "AI-Driven 5-Year Revenue Forecasting Framework for Digital Advertising Platforms",
+    "base_year": 2024,
+    "forecast_horizon": 5,
+    "forecast_end_year": 2030
+  },
+  "scenarios": {
+    "active": "base",
+    "definitions": {
+      "bull": {
+        "label": "Bull Case",
+        "description": "Aggressive AI adoption, favorable macro, limited regulation",
+        "macro_growth_premium": 0.02,
+        "ai_adoption_acceleration": 1.3,
+        "regulatory_drag": 0.02,
+        "competitive_intensity": 0.7
+      },
+      "base": {
+        "label": "Base Case",
+        "description": "Moderate AI adoption following current trajectory",
+        "macro_growth_premium": 0.0,
+        "ai_adoption_acceleration": 1.0,
+        "regulatory_drag": 0.05,
+        "competitive_intensity": 1.0
+      },
+      "bear": {
+        "label": "Bear Case",
+        "description": "Slow AI adoption, macro headwinds, heavy regulation",
+        "macro_growth_premium": -0.02,
+        "ai_adoption_acceleration": 0.7,
+        "regulatory_drag": 0.12,
+        "competitive_intensity": 1.4
+      }
+    }
+  },
+  "historical_revenue": {
+    "source": "SEC 10-K Filings (Advertising Revenue)",
+    "currency": "USD_billions",
+    "annual": {
+      "2019": 69.66,
+      "2020": 84.17,
+      "2021": 114.93,
+      "2022": 113.64,
+      "2023": 131.95,
+      "2024": 160.89
+    },
+    "quarterly": {
+      "2022_Q1": 26.99, "2022_Q2": 28.15, "2022_Q3": 27.24, "2022_Q4": 31.25,
+      "2023_Q1": 28.10, "2023_Q2": 31.50, "2023_Q3": 33.64, "2023_Q4": 38.71,
+      "2024_Q1": 35.64, "2024_Q2": 38.33, "2024_Q3": 39.89, "2024_Q4": 47.03
+    },
+    "regional_split": {
+      "us_canada": 0.47,
+      "europe": 0.24,
+      "apac": 0.19,
+      "rest_of_world": 0.10
+    },
+    "arpu_by_region": {
+      "us_canada": {"2022": 58.77, "2023": 68.44, "2024": 82.01},
+      "europe": {"2022": 17.29, "2023": 19.68, "2024": 23.14},
+      "apac": {"2022": 4.61, "2023": 5.12, "2024": 6.03},
+      "rest_of_world": {"2022": 3.52, "2023": 3.88, "2024": 4.45}
+    }
+  },
+  "ai_channels": {
+    "ai_targeting": {
+      "label": "AI-Optimized Ad Targeting",
+      "description": "Advantage+-style ML-driven auctions improving conversion & CPM",
+      "adoption_start_year": 2023,
+      "adoption_inflection_year": 2026,
+      "adoption_ceiling_pct": 0.85,
+      "revenue_uplift_per_adoption_pct": 0.12,
+      "maturity": "growth"
+    },
+    "ai_creative": {
+      "label": "AI-Generated Creative & Dynamic Ads",
+      "description": "Generative AI ad variations lowering SMB barrier",
+      "adoption_start_year": 2024,
+      "adoption_inflection_year": 2027,
+      "adoption_ceiling_pct": 0.65,
+      "new_advertiser_growth_rate": 0.08,
+      "creative_volume_multiplier": 3.0,
+      "maturity": "early"
+    },
+    "ai_surfaces": {
+      "label": "AI-Native Ad Surfaces",
+      "description": "Ads in chat, AI agents, sponsored AI recommendations",
+      "adoption_start_year": 2025,
+      "adoption_inflection_year": 2028,
+      "adoption_ceiling_pct": 0.40,
+      "monetization_rate_vs_feed": 0.35,
+      "maturity": "nascent"
+    },
+    "ai_messaging": {
+      "label": "AI Business Messaging & Commerce",
+      "description": "AI chatbots for business-customer interactions with commerce",
+      "adoption_start_year": 2024,
+      "adoption_inflection_year": 2027,
+      "adoption_ceiling_pct": 0.50,
+      "revenue_per_conversation": 0.15,
+      "maturity": "early"
+    },
+    "ai_infrastructure": {
+      "label": "AI Infrastructure Monetization",
+      "description": "AI capabilities sold as platform/API to advertisers",
+      "adoption_start_year": 2025,
+      "adoption_inflection_year": 2028,
+      "adoption_ceiling_pct": 0.25,
+      "arpa_enterprise": 50000,
+      "maturity": "nascent"
+    },
+    "ai_measurement": {
+      "label": "AI-Enhanced Measurement & Attribution",
+      "description": "Privacy-safe AI measurement replacing deprecated signals",
+      "adoption_start_year": 2023,
+      "adoption_inflection_year": 2026,
+      "adoption_ceiling_pct": 0.90,
+      "signal_recovery_pct": 0.75,
+      "maturity": "growth"
+    }
+  },
+  "cannibalization_matrix": {
+    "description": "Cross-channel cannibalization rates (negative = cannibalizes, positive = synergy)",
+    "traditional_feed": {
+      "ai_targeting": -0.15, "ai_creative": -0.08, "ai_surfaces": -0.12,
+      "ai_messaging": -0.05, "ai_infrastructure": 0.0, "ai_measurement": 0.10
+    },
+    "ai_targeting": {
+      "ai_creative": 0.05, "ai_surfaces": 0.0, "ai_messaging": 0.02,
+      "ai_infrastructure": 0.04, "ai_measurement": 0.08
+    },
+    "ai_creative": {
+      "ai_surfaces": 0.02, "ai_messaging": 0.0,
+      "ai_infrastructure": 0.06, "ai_measurement": 0.05
+    },
+    "ai_surfaces": {
+      "ai_messaging": -0.08, "ai_infrastructure": 0.03, "ai_measurement": 0.04
+    }
+  },
+  "market": {
+    "total_digital_ad_spend_2024_billions": 740,
+    "company_share_2024": 0.217,
+    "market_growth_rate_base": 0.09,
+    "format_mix": {
+      "search": 0.28,
+      "social": 0.33,
+      "display_programmatic": 0.15,
+      "retail_media": 0.12,
+      "ctv_video": 0.08,
+      "ai_native": 0.04
+    },
+    "format_growth_rates": {
+      "search": 0.06,
+      "social": 0.10,
+      "display_programmatic": 0.04,
+      "retail_media": 0.18,
+      "ctv_video": 0.15,
+      "ai_native": 0.45
+    },
+    "share_tailwinds": {
+      "ai_product_superiority": 0.008,
+      "messaging_commerce": 0.004,
+      "short_video_capture": 0.006,
+      "smb_acquisition": 0.003
+    },
+    "share_headwinds": {
+      "search_ai_disruption": -0.003,
+      "retail_media_migration": -0.005,
+      "short_video_competition": -0.004,
+      "regulatory_share_caps": -0.002,
+      "ctv_brand_migration": -0.003
+    },
+    "competitive_moat_scores": {
+      "data_advantage": 4.5,
+      "ai_talent_infrastructure": 4.8,
+      "advertiser_switching_costs": 3.8,
+      "user_network_effects": 4.2,
+      "distribution_advantage": 4.0
+    },
+    "tam_ai_expansion_multiplier": 1.15
+  },
+  "privacy": {
+    "signal_degradation": {
+      "os_tracking_restrictions": {"severity": 0.20, "opt_in_rate_us": 0.25, "opt_in_rate_eu": 0.15, "opt_in_rate_apac": 0.40},
+      "regulatory_consent_decay": {"annual_rate": 0.03, "regions_affected": ["europe", "us_canada"]},
+      "cookie_deprecation": {"signal_loss": 0.12, "timeline_completion_year": 2027},
+      "user_privacy_adoption": {"adblocker_growth": 0.05, "vpn_growth": 0.08}
+    },
+    "signal_recovery_ai": {
+      "on_device_inference": {"recovery_pct": 0.30, "timeline_start": 2025},
+      "probabilistic_modeling": {"accuracy_vs_deterministic": 0.85, "timeline_start": 2024},
+      "privacy_enhancing_tech": {"recovery_pct": 0.20, "timeline_start": 2026},
+      "first_party_enrichment": {"amplification_multiplier": 1.25, "timeline_start": 2024}
+    },
+    "compliance_cost_pct_of_revenue": 0.02
+  },
+  "integrity": {
+    "content_risks": {
+      "ai_misinformation_rate": {"base": 0.05, "annual_growth": 0.15},
+      "deepfake_incident_rate": {"base": 0.02, "advertiser_pullback_elasticity": 0.3},
+      "ai_spam_metric_inflation": {"base": 0.03, "annual_growth": 0.10}
+    },
+    "ad_integrity_risks": {
+      "fraudulent_ad_growth": 0.12,
+      "brand_safety_incident_frequency": 0.04,
+      "measurement_fraud_rate": 0.06
+    },
+    "integrity_investment_pct_of_revenue": 0.03,
+    "integrity_score_sensitivity_to_investment": 0.65,
+    "investment_to_score_lag_quarters": 2,
+    "cpm_sensitivity_to_integrity_score": 0.15
+  },
+  "monte_carlo": {
+    "num_simulations": 10000,
+    "random_seed": 42,
+    "parameter_distributions": {
+      "macro_growth": {"type": "normal", "std": 0.03},
+      "ai_adoption_speed": {"type": "normal", "std": 0.15},
+      "competition_intensity": {"type": "uniform", "range": [0.7, 1.4]},
+      "regulatory_impact": {"type": "triangular", "min": 0.0, "mode": 0.05, "max": 0.20},
+      "privacy_signal_loss": {"type": "normal", "std": 0.05}
+    }
+  },
+  "seasonality": {
+    "quarterly_factors": {
+      "Q1": 0.88,
+      "Q2": 0.95,
+      "Q3": 0.98,
+      "Q4": 1.19
+    },
+    "regional_seasonality": {
+      "us_canada": {"Q4_boost": 0.25, "Q1_dip": -0.15},
+      "europe": {"Q4_boost": 0.20, "Q3_summer_dip": -0.05},
+      "apac": {"Q1_lunar_new_year": 0.08, "Q4_singles_day": 0.12},
+      "rest_of_world": {"Q4_boost": 0.10}
+    }
+  }
+}
