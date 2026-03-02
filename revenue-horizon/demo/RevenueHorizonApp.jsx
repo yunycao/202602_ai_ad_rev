@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react"
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, ReferenceLine } from "recharts"
-import { TrendingUp, Shield, Eye, Globe, Settings, BarChart3, Target, Brain, Lock, AlertTriangle, ChevronDown, ChevronUp, Info, Cpu, Activity, Layers } from "lucide-react"
+import { TrendingUp, Shield, Eye, Globe, Settings, BarChart3, Target, Brain, Lock, AlertTriangle, ChevronDown, ChevronUp, Info, Cpu, Activity, Layers, Zap, Users, Server, UserCog, RotateCcw } from "lucide-react"
 
 const COLORS = {
   bg: "#0F172A",
@@ -402,6 +402,120 @@ export default function RevenueHorizonApp() {
     },
   ]
 
+  // --- Efficiency Flywheel ---
+  const STAKEHOLDERS = {
+    advertiser: {
+      label: "Advertisers", icon: Target, color: "#0891B2",
+      lift2030: 0.28, p: 0.04, q: 0.40,
+      stages: [
+        { id: "planning", label: "Campaign Planning", base: 0.30, ceiling: 0.85, lift: 0.55 },
+        { id: "creative", label: "Creative Production", base: 0.20, ceiling: 0.80, lift: 0.60 },
+        { id: "measurement", label: "Measurement", base: 0.35, ceiling: 0.90, lift: 0.55 },
+      ],
+      segments: [
+        { label: "SMB", share: 0.42, lift: 0.35 },
+        { label: "Mid-Market", share: 0.28, lift: 0.28 },
+        { label: "Enterprise", share: 0.20, lift: 0.18 },
+        { label: "Agency", share: 0.10, lift: 0.30 },
+      ],
+      revenueLink: "Higher ROAS → budget expansion",
+    },
+    user: {
+      label: "Users", icon: Users, color: "#10B981",
+      lift2030: 0.08, p: 0.03, q: 0.32,
+      stages: [
+        { id: "targeting", label: "Ad Relevance", base: 0.40, ceiling: 0.88, lift: 0.48 },
+        { id: "experience", label: "Experience Quality", base: 0.25, ceiling: 0.70, lift: 0.45 },
+        { id: "trust", label: "Content Trust", base: 0.50, ceiling: 0.85, lift: 0.35 },
+      ],
+      segments: [
+        { label: "DAU Core", share: 0.55, lift: 0.06 },
+        { label: "MAU Casual", share: 0.30, lift: 0.10 },
+        { label: "New/Reactivated", share: 0.10, lift: 0.12 },
+        { label: "Commerce-Intent", share: 0.05, lift: 0.15 },
+      ],
+      revenueLink: "Engagement → impression supply (lower lift)",
+    },
+    platform: {
+      label: "Platform", icon: Server, color: "#8B5CF6",
+      lift2030: 0.18, p: 0.035, q: 0.38,
+      stages: [
+        { id: "delivery", label: "Ad Delivery", base: 0.45, ceiling: 0.92, lift: 0.47 },
+        { id: "infrastructure", label: "Infra Cost", base: 0.35, ceiling: 0.85, lift: 0.50 },
+        { id: "moderation", label: "Moderation", base: 0.30, ceiling: 0.88, lift: 0.58 },
+      ],
+      segments: [
+        { label: "Auction Engine", share: 0.30, lift: 0.22 },
+        { label: "Model Serving", share: 0.35, lift: 0.45 },
+        { label: "Content Systems", share: 0.20, lift: 0.38 },
+        { label: "Data Pipeline", share: 0.15, lift: 0.25 },
+      ],
+      revenueLink: "Fill rate + CPM optimization + margin expansion",
+    },
+    employee: {
+      label: "Internal Employees", icon: UserCog, color: "#F59E0B",
+      lift2030: 0.22, p: 0.05, q: 0.45,
+      stages: [
+        { id: "ad_review", label: "Ad Review", base: 0.25, ceiling: 0.82, lift: 0.57 },
+        { id: "support", label: "Advertiser Support", base: 0.20, ceiling: 0.78, lift: 0.58 },
+        { id: "engineering", label: "Engineering", base: 0.15, ceiling: 0.75, lift: 0.60 },
+      ],
+      segments: [
+        { label: "Ad Review Team", share: 0.35, lift: 0.57 },
+        { label: "Support & Success", share: 0.25, lift: 0.48 },
+        { label: "Product & Eng", share: 0.25, lift: 0.40 },
+        { label: "Data Science", share: 0.15, lift: 0.32 },
+      ],
+      revenueLink: "Cost per $1B managed: -35%",
+    },
+  }
+
+  const SPILLOVERS = { adv_to_user: 0.30, user_to_plat: 0.40, plat_to_emp: 0.25, emp_to_adv: 0.35 }
+
+  // Compute flywheel efficiency over time
+  const flywheelData = useMemo(() => {
+    const years = Array.from({ length: 8 }, (_, i) => 2023 + i)
+    return years.map((year) => {
+      const row = { year }
+      let totalUplift = 0
+      Object.entries(STAKEHOLDERS).forEach(([key, sh]) => {
+        const t = Math.max(0, year - 2024)
+        if (t <= 0) { row[key] = 0; return }
+        const pq = sh.p + sh.q
+        const exp = Math.exp(-pq * t * aiAcceleration)
+        const F = sh.p > 0 ? (1 - exp) / (1 + (sh.q / sh.p) * exp) : 0
+        const eff = Math.max(0, Math.min(1, F))
+        row[key] = parseFloat((eff * 100).toFixed(1))
+        totalUplift += sh.lift2030 * eff
+      })
+      row.totalUplift = parseFloat((totalUplift * 100).toFixed(1))
+      return row
+    })
+  }, [aiAcceleration])
+
+  // P&L impact over time
+  const plImpactData = useMemo(() => {
+    return forecastData.filter(d => d.year >= 2025).map(d => {
+      const baseRev = d.total
+      const t = Math.max(0, d.year - 2024)
+      const impacts = {}
+      Object.entries(STAKEHOLDERS).forEach(([key, sh]) => {
+        const pq = sh.p + sh.q
+        const exp = Math.exp(-pq * t * aiAcceleration)
+        const F = sh.p > 0 ? Math.max(0, Math.min(1, (1 - exp) / (1 + (sh.q / sh.p) * exp))) : 0
+        impacts[key] = parseFloat((baseRev * sh.lift2030 * F).toFixed(1))
+      })
+      return {
+        year: d.year,
+        advertiser: impacts.advertiser,
+        user: impacts.user,
+        platform: impacts.platform,
+        employee: impacts.employee,
+        total: parseFloat((impacts.advertiser + impacts.user + impacts.platform + impacts.employee).toFixed(1)),
+      }
+    })
+  }, [forecastData, aiAcceleration])
+
   return (
     <div style={{ backgroundColor: COLORS.bg, color: COLORS.text }} className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
@@ -423,6 +537,7 @@ export default function RevenueHorizonApp() {
             { label: "Summary", icon: TrendingUp },
             { label: "Market", icon: Globe },
             { label: "AI Impact", icon: Brain },
+            { label: "Efficiency", icon: Zap },
             { label: "Privacy", icon: Shield },
             { label: "Risk", icon: AlertTriangle },
             { label: "Config", icon: Settings },
@@ -765,8 +880,174 @@ export default function RevenueHorizonApp() {
           </div>
         )}
 
-        {/* Tab 3: Privacy & Integrity */}
+        {/* Tab 3: AI Efficiency Flywheel */}
         {activeTab === 3 && (
+          <div className="space-y-8">
+            {/* Flywheel Overview */}
+            <div>
+              <h3 className="text-xl font-bold mb-2">AI Efficiency Flywheel Creates Compounding Returns Across Four Stakeholders</h3>
+              <p className="text-sm text-slate-400 mb-6">Each stakeholder's gains spill over to the next, accelerating the virtuous cycle</p>
+            </div>
+
+            {/* Flywheel Cycle Diagram */}
+            <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
+              <div className="grid grid-cols-4 gap-4 mb-8">
+                {Object.entries(STAKEHOLDERS).map(([key, sh], i) => {
+                  const Icon = sh.icon
+                  const spillKeys = ['emp_to_adv', 'adv_to_user', 'user_to_plat', 'plat_to_emp']
+                  const spillLabels = ['Employee →', 'Advertiser →', 'User →', 'Platform →']
+                  const spillVal = Object.values(SPILLOVERS)[i]
+                  return (
+                    <div key={key} className="text-center">
+                      <div className="p-5 rounded-lg border-2 mb-3" style={{ borderColor: sh.color, backgroundColor: sh.color + "15" }}>
+                        <Icon size={28} color={sh.color} className="mx-auto mb-2" />
+                        <h4 className="font-bold text-sm">{sh.label}</h4>
+                        <p className="text-2xl font-bold mt-1" style={{ color: sh.color }}>+{(sh.lift2030 * 100).toFixed(0)}%</p>
+                        <p className="text-xs text-slate-400 mt-1">{sh.revenueLink}</p>
+                      </div>
+                      {i < 3 && (
+                        <div className="text-xs text-slate-500 flex items-center justify-center gap-1">
+                          <span>Spillover: {(spillVal * 100).toFixed(0)}%</span>
+                          <span className="text-slate-600">→</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="text-center p-3 rounded-lg" style={{ backgroundColor: COLORS.bg }}>
+                <RotateCcw size={16} color={COLORS.accent} className="inline mr-2" />
+                <span className="text-sm text-slate-400">Flywheel loop: Employee efficiency → faster innovation → better advertiser tools → better ads → user experience → more inventory → platform optimization → margin for R&D → employee tools</span>
+              </div>
+            </div>
+
+            {/* Efficiency Adoption Over Time */}
+            <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
+              <h3 className="text-xl font-bold mb-2">Advertiser and Employee Efficiency Adopt Fastest via Bass Diffusion</h3>
+              <p className="text-sm text-slate-400 mb-6">User efficiency has lowest lift but still contributes to the flywheel cycle</p>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={flywheelData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="year" stroke={COLORS.muted} />
+                  <YAxis stroke={COLORS.muted} label={{ value: "Efficiency (%)", angle: -90, position: "insideLeft", fill: COLORS.muted }} />
+                  <Tooltip contentStyle={{ backgroundColor: COLORS.card, border: "1px solid #334155" }} formatter={(v) => `${v.toFixed(1)}%`} />
+                  <Legend />
+                  {Object.entries(STAKEHOLDERS).map(([key, sh]) => (
+                    <Line key={key} type="monotone" dataKey={key} stroke={sh.color} strokeWidth={2} dot={{ r: 3 }} name={sh.label} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* P&L Revenue Impact */}
+            <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
+              <h3 className="text-xl font-bold mb-2">Combined Efficiency Lever Adds ${plImpactData[plImpactData.length - 1]?.total || 0}B Revenue Uplift by 2030</h3>
+              <p className="text-sm text-slate-400 mb-6">Full-funnel P&L impact: revenue expansion + margin + cost savings</p>
+              <ResponsiveContainer width="100%" height={350}>
+                <AreaChart data={plImpactData}>
+                  <defs>
+                    {Object.entries(STAKEHOLDERS).map(([key, sh]) => (
+                      <linearGradient key={key} id={`grad_${key}`} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={sh.color} stopOpacity={0.8} />
+                        <stop offset="95%" stopColor={sh.color} stopOpacity={0} />
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="year" stroke={COLORS.muted} />
+                  <YAxis stroke={COLORS.muted} label={{ value: "Revenue Impact ($B)", angle: -90, position: "insideLeft", fill: COLORS.muted }} />
+                  <Tooltip contentStyle={{ backgroundColor: COLORS.card, border: "1px solid #334155" }} formatter={(v) => `$${v.toFixed(1)}B`} />
+                  <Legend />
+                  {Object.entries(STAKEHOLDERS).map(([key, sh]) => (
+                    <Area key={key} type="monotone" dataKey={key} stackId="1" stroke={sh.color} fill={`url(#grad_${key})`} name={sh.label} />
+                  ))}
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Segment Breakdown Cards */}
+            <div>
+              <h3 className="text-xl font-bold mb-2">Segment-Level Lift Shows SMBs and Ad Reviewers Gain Most From AI</h3>
+              <p className="text-sm text-slate-400 mb-6">Lift percentage represents maximum efficiency gain by 2030 at full adoption</p>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              {Object.entries(STAKEHOLDERS).map(([key, sh]) => {
+                const Icon = sh.icon
+                return (
+                  <div key={key} style={{ backgroundColor: COLORS.card }} className="p-6 rounded-lg border border-slate-700">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Icon size={18} color={sh.color} />
+                      <h4 className="font-bold">{sh.label}</h4>
+                      <span className="ml-auto text-sm font-bold" style={{ color: sh.color }}>+{(sh.lift2030 * 100).toFixed(0)}% total</span>
+                    </div>
+                    <div className="space-y-3">
+                      {sh.segments.map((seg, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-slate-400">{seg.label} ({(seg.share * 100).toFixed(0)}% of base)</span>
+                            <span className="font-bold">+{(seg.lift * 100).toFixed(0)}%</span>
+                          </div>
+                          <div style={{ backgroundColor: COLORS.bg }} className="h-2 rounded-full overflow-hidden">
+                            <div style={{ width: `${seg.lift * 100}%`, height: "100%", backgroundColor: sh.color, opacity: 0.6 + seg.lift * 0.4 }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Ads Cycle Stages */}
+                    <div className="mt-4 pt-3 border-t border-slate-700">
+                      <p className="text-xs text-slate-500 mb-2">Ads Cycle Stages</p>
+                      <div className="flex gap-2">
+                        {sh.stages.map((stage, i) => (
+                          <div key={i} className="flex-1 text-center p-2 rounded" style={{ backgroundColor: COLORS.bg }}>
+                            <p className="text-xs text-slate-400">{stage.label}</p>
+                            <p className="text-sm font-bold" style={{ color: sh.color }}>{stage.base * 100}→{stage.ceiling * 100}%</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* KPI Summary Table */}
+            <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
+              <h3 className="text-xl font-bold mb-6">Key Efficiency KPIs by Stakeholder</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left p-3 text-slate-400">Stakeholder</th>
+                      <th className="text-center p-3 text-slate-400">KPI 1</th>
+                      <th className="text-center p-3 text-slate-400">KPI 2</th>
+                      <th className="text-center p-3 text-slate-400">KPI 3</th>
+                      <th className="text-center p-3 text-slate-400">2030 Lift</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { name: "Advertiser", kpi1: "Setup: -40%", kpi2: "Creative: 5x variants", kpi3: "ROAS: +25%", lift: "+28%", color: "#0891B2" },
+                      { name: "User", kpi1: "CTR: +35%", kpi2: "Engagement: +20%", kpi3: "Ad Fatigue: -30%", lift: "+8%", color: "#10B981" },
+                      { name: "Platform", kpi1: "Fill Rate: +8%", kpi2: "Cost/1K: -45%", kpi3: "Approval: 3x", lift: "+18%", color: "#8B5CF6" },
+                      { name: "Employee", kpi1: "Review: 3x", kpi2: "Deflection: 60%", kpi3: "Dev Velocity: +40%", lift: "-35% cost", color: "#F59E0B" },
+                    ].map((row, i) => (
+                      <tr key={i} className="border-b border-slate-800">
+                        <td className="p-3 font-semibold" style={{ color: row.color }}>{row.name}</td>
+                        <td className="text-center p-3">{row.kpi1}</td>
+                        <td className="text-center p-3">{row.kpi2}</td>
+                        <td className="text-center p-3">{row.kpi3}</td>
+                        <td className="text-center p-3 font-bold" style={{ color: row.color }}>{row.lift}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Privacy & Integrity */}
+        {activeTab === 4 && (
           <div className="space-y-8">
             <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
               <h3 className="text-xl font-bold mb-2">AI-Powered Signal Recovery Offsets 60% of Privacy-Driven Signal Loss</h3>
@@ -875,8 +1156,8 @@ export default function RevenueHorizonApp() {
           </div>
         )}
 
-        {/* Tab 4: Risk & Sensitivity */}
-        {activeTab === 4 && (
+        {/* Tab 5: Risk & Sensitivity */}
+        {activeTab === 5 && (
           <div className="space-y-8">
             {/* Monte Carlo Distribution */}
             <div style={{ backgroundColor: COLORS.card }} className="p-8 rounded-lg border border-slate-700">
@@ -958,8 +1239,8 @@ export default function RevenueHorizonApp() {
           </div>
         )}
 
-        {/* Tab 5: Configuration */}
-        {activeTab === 5 && (
+        {/* Tab 6: Configuration */}
+        {activeTab === 6 && (
           <div className="grid grid-cols-2 gap-8">
             {/* Left column: Controls */}
             <div className="space-y-6">

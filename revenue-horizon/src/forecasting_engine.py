@@ -175,6 +175,158 @@ class GrowthRateMeanReversion:
         return g
 
 
+class EfficiencyFlywheelModel:
+    """
+    AI Efficiency Flywheel across the full ads cycle.
+
+    Models a 4-stakeholder virtuous cycle:
+    Advertiser → User → Platform → Employee → (back to Advertiser)
+
+    Each stakeholder's efficiency gain spills over to the next via
+    spillover coefficients, creating a compounding flywheel effect.
+
+    Revenue/margin impact:
+    - Advertisers: higher ROAS → budget expansion multiplier
+    - Users: better experience → impression supply multiplier (lower lift)
+    - Platform: auction optimization → CPM + margin expansion
+    - Employees: AI copilots → cost per $1B managed reduction
+    """
+
+    def __init__(self, config: dict):
+        flywheel_cfg = config.get('efficiency_flywheel', {})
+        self.stakeholders = flywheel_cfg.get('stakeholders', {})
+        self.spillover = flywheel_cfg.get('spillover_coefficients', {})
+        self.start_year = flywheel_cfg.get('flywheel_compound_start_year', 2025)
+        self.cycle_accel = flywheel_cfg.get('flywheel_acceleration_per_cycle', 0.05)
+
+    def stakeholder_efficiency(self, stakeholder_id: str, year: int) -> float:
+        """
+        Compute composite efficiency score for a stakeholder at a given year.
+        Uses Bass Diffusion on the stakeholder's adoption parameters.
+        """
+        sh = self.stakeholders.get(stakeholder_id, {})
+        p = sh.get('efficiency_adoption_p', 0.03)
+        q = sh.get('efficiency_adoption_q', 0.35)
+
+        t = max(0, year - self.start_year + 1)
+        if t <= 0:
+            return 0.0
+
+        # Bass diffusion adoption fraction
+        pq = p + q
+        exp_term = np.exp(-pq * t)
+        if p == 0:
+            return 0.0
+        F = (1 - exp_term) / (1 + (q / p) * exp_term)
+        return float(np.clip(F, 0, 1))
+
+    def stage_efficiency(self, stakeholder_id: str, stage_id: str, year: int) -> float:
+        """Compute efficiency for a specific ads-cycle stage."""
+        sh = self.stakeholders.get(stakeholder_id, {})
+        stages = sh.get('ads_cycle_stages', {})
+        stage = stages.get(stage_id, {})
+
+        base = stage.get('base_efficiency_2024', 0.2)
+        ceiling = stage.get('ai_ceiling', 0.8)
+        adoption = self.stakeholder_efficiency(stakeholder_id, year)
+
+        return base + (ceiling - base) * adoption
+
+    def flywheel_multiplier(self, year: int) -> dict:
+        """
+        Compute the compound flywheel multiplier for each stakeholder.
+        Each stakeholder gains from its own efficiency PLUS spillover from
+        the previous stakeholder in the cycle.
+        """
+        # Order: advertiser → user → platform → employee → advertiser
+        cycle = ['advertiser', 'user', 'platform', 'employee']
+        spillover_keys = [
+            'employee_to_advertiser',    # employee feeds advertiser
+            'advertiser_to_user',        # advertiser feeds user
+            'user_to_platform',          # user feeds platform
+            'platform_to_employee',      # platform feeds employee
+        ]
+
+        own_eff = {}
+        for sh_id in cycle:
+            own_eff[sh_id] = self.stakeholder_efficiency(sh_id, year)
+
+        # Compute spillover-augmented efficiency
+        augmented = {}
+        for i, sh_id in enumerate(cycle):
+            spill_key = spillover_keys[i]
+            spill_coeff = self.spillover.get(spill_key, 0.0)
+            feeder_id = cycle[(i - 1) % len(cycle)]
+            feeder_eff = own_eff[feeder_id]
+            augmented[sh_id] = own_eff[sh_id] + spill_coeff * feeder_eff
+
+        return augmented
+
+    def revenue_impact(self, year: int, baseline_revenue: float) -> dict:
+        """
+        Compute the P&L impact of efficiency gains.
+        Returns revenue uplift, margin expansion, and cost savings.
+        """
+        eff = self.flywheel_multiplier(year)
+
+        # Advertiser: ROAS improvement → budget expansion
+        adv_sh = self.stakeholders.get('advertiser', {})
+        adv_max_mult = adv_sh.get('revenue_multiplier_2030', 1.28) - 1.0
+        adv_uplift = baseline_revenue * adv_max_mult * eff.get('advertiser', 0)
+
+        # User: engagement → impression supply (lower lift)
+        usr_sh = self.stakeholders.get('user', {})
+        usr_max_mult = usr_sh.get('revenue_multiplier_2030', 1.08) - 1.0
+        usr_uplift = baseline_revenue * usr_max_mult * eff.get('user', 0)
+
+        # Platform: CPM + margin
+        plat_sh = self.stakeholders.get('platform', {})
+        plat_max_mult = plat_sh.get('revenue_multiplier_2030', 1.18) - 1.0
+        plat_margin = plat_sh.get('margin_expansion_2030', 0.06)
+        plat_uplift = baseline_revenue * plat_max_mult * eff.get('platform', 0)
+        margin_expansion = plat_margin * eff.get('platform', 0)
+
+        # Employee: cost savings
+        emp_sh = self.stakeholders.get('employee', {})
+        cost_reduction = emp_sh.get('cost_per_billion_reduction_2030', 0.35)
+        emp_savings = baseline_revenue * 0.03 * cost_reduction * eff.get('employee', 0)  # ops ~3% of rev
+
+        total_revenue_uplift = adv_uplift + usr_uplift + plat_uplift
+        total_uplift_pct = total_revenue_uplift / baseline_revenue if baseline_revenue > 0 else 0
+
+        return {
+            'year': year,
+            'advertiser_uplift': float(adv_uplift),
+            'user_uplift': float(usr_uplift),
+            'platform_uplift': float(plat_uplift),
+            'employee_savings': float(emp_savings),
+            'total_revenue_uplift': float(total_revenue_uplift),
+            'total_uplift_pct': float(total_uplift_pct),
+            'margin_expansion_pp': float(margin_expansion * 100),
+            'flywheel_efficiency': eff,
+        }
+
+    def segment_breakdown(self, stakeholder_id: str, year: int) -> list:
+        """Return segment-level lift breakdown for a stakeholder."""
+        sh = self.stakeholders.get(stakeholder_id, {})
+        segments = sh.get('segments', {})
+        adoption = self.stakeholder_efficiency(stakeholder_id, year)
+
+        results = []
+        for seg_id, seg in segments.items():
+            max_lift = seg.get('lift_pct', 0)
+            current_lift = max_lift * adoption
+            results.append({
+                'segment_id': seg_id,
+                'label': seg.get('label', seg_id),
+                'max_lift_pct': max_lift,
+                'current_lift_pct': float(current_lift),
+                'adoption_pct': float(adoption),
+                'notes': seg.get('notes', ''),
+            })
+        return results
+
+
 class ForecastingEngine:
     """
     Advanced forecasting engine combining:
@@ -204,6 +356,7 @@ class ForecastingEngine:
         self._init_holt_winters()
         self._init_bass_models()
         self._init_growth_model()
+        self._init_efficiency_flywheel()
 
     def _init_holt_winters(self):
         """Fit Holt-Winters to quarterly revenue data."""
@@ -261,6 +414,18 @@ class ForecastingEngine:
             kappa=0.50,  # Aggressive reversion — 2024 was anomalous recovery year
             sigma=0.015
         )
+
+    def _init_efficiency_flywheel(self):
+        """Initialize the AI Efficiency Flywheel model."""
+        self.flywheel_model = EfficiencyFlywheelModel(self.config)
+
+    def compute_efficiency_impact(self, baseline_revenue: Dict[int, float]) -> Dict[int, dict]:
+        """Compute flywheel efficiency impact for each forecast year."""
+        impacts = {}
+        for year in self.years:
+            base_rev = baseline_revenue.get(year, 0)
+            impacts[year] = self.flywheel_model.revenue_impact(year, base_rev)
+        return impacts
 
     def compute_baseline_forecast(self) -> Dict[int, float]:
         """
@@ -388,7 +553,7 @@ class ForecastingEngine:
         return traditional
 
     def forecast_total_revenue(self, scenario='base') -> Dict[str, Dict[int, float]]:
-        """Run complete multi-layer forecast."""
+        """Run complete multi-layer forecast including efficiency flywheel."""
         baseline = self.compute_baseline_forecast()
 
         channel_revenues = {}
@@ -398,16 +563,33 @@ class ForecastingEngine:
         net_channels = self.apply_cannibalization(channel_revenues, baseline)
         traditional = self.forecast_traditional_revenue(baseline, net_channels)
 
+        # Compute efficiency flywheel impact
+        efficiency_impacts = self.compute_efficiency_impact(baseline)
+
         result = {'traditional': traditional}
         for channel_id in net_channels:
             result[channel_id] = net_channels[channel_id]
+
+        # Store efficiency uplift as a separate component
+        result['efficiency_uplift'] = {}
+        for year in self.years:
+            result['efficiency_uplift'][year] = efficiency_impacts[year]['total_revenue_uplift']
 
         result['total'] = {}
         for year in self.years:
             total = traditional[year]
             for channel_id in net_channels:
                 total += net_channels[channel_id][year]
+            # Note: efficiency uplift is already partially captured in AI channels
+            # We add the residual platform + user efficiency (non-channel uplift)
+            # to avoid double-counting with AI channel revenue
+            plat_uplift = efficiency_impacts[year]['platform_uplift']
+            user_uplift = efficiency_impacts[year]['user_uplift']
+            total += (plat_uplift + user_uplift) * 0.5  # partial attribution to avoid double-count
             result['total'][year] = total
+
+        # Store efficiency breakdown for reporting
+        result['efficiency_detail'] = efficiency_impacts
 
         return result
 
@@ -593,6 +775,16 @@ class ForecastingEngine:
                     'Long-run rate (θ)': f'{self.growth_model.theta:.1%}',
                     'Reversion speed (κ)': f'{self.growth_model.kappa}',
                     'Volatility (σ)': f'{self.growth_model.sigma}',
+                }
+            },
+            'efficiency_flywheel': {
+                'name': 'AI Efficiency Flywheel',
+                'description': 'Models AI efficiency gains across the full ads cycle for 4 stakeholders (Advertiser, User, Platform, Employee) as a compounding virtuous cycle. Each stakeholder\'s efficiency spills over to the next via calibrated spillover coefficients, creating an accelerating return curve.',
+                'parameters': {
+                    'Stakeholders': '4 (Advertiser +28%, User +8%, Platform +18%, Employee -35% cost)',
+                    'Spillover cycle': 'Adv→User (0.30), User→Plat (0.40), Plat→Emp (0.25), Emp→Adv (0.35)',
+                    'Ads cycle stages': '12 total (3 per stakeholder)',
+                    'Adoption model': 'Bass Diffusion per stakeholder',
                 }
             }
         }

@@ -449,7 +449,185 @@ def create_presentation():
              0.5, 3.0, 9, 2.0, size=10)
     add_source_footer(slide, "Source: Correlated Monte Carlo simulation (10,000 runs, Cholesky decomposition)")
 
-    # ── Slide 13: Strategic Implications ──
+    # ── Slide 13: AI Efficiency Flywheel Overview (dark bg) ──
+    slide = make_slide(prs, dark=True)
+    add_takeaway_title(slide, "AI efficiency flywheel compounds gains across the full ads cycle for all four stakeholder groups", dark_bg=True)
+
+    # Subtitle — pushed down to avoid title overlap
+    add_body(slide, "Each stakeholder's efficiency feeds the next — creating an accelerating virtuous cycle that drives both revenue expansion and margin improvement",
+             0.5, 0.85, 9, 0.4, size=10, color=COLORS["text_light"])
+
+    # 4 stakeholder cards on dark background
+    stakeholders = [
+        ("ADVERTISERS", "+28%", "Revenue Expansion", "Campaign setup: -40%\nCreative variants: 5x\nROAS visibility: +25%",
+         "Planning → Creative → Measurement", COLORS["accent"]),
+        ("USERS", "+8%", "Impression Supply", "Ad CTR: +35%\nEngagement depth: +20%\nAd fatigue: -30%",
+         "Relevance → Experience → Trust", COLORS["green"]),
+        ("PLATFORM", "+18%", "CPM + Margin", "Fill rate: +8%\nCost/1K predictions: -45%\nAd approval: 3x faster",
+         "Delivery → Infra → Moderation", RGBColor(0x8B, 0x5C, 0xF6)),
+        ("EMPLOYEES", "-35% cost", "Operational Leverage", "Review throughput: 3x\nTicket deflection: 60%\nDev velocity: +40%",
+         "Ad Review → Support → Engineering", RGBColor(0xF5, 0x9E, 0x0B)),
+    ]
+
+    for i, (name, lift, link_label, kpis, stages, color) in enumerate(stakeholders):
+        x = 0.35 + i * 2.42
+        # Card background
+        shape = slide.shapes.add_shape(1, Inches(x), Inches(1.25), Inches(2.2), Inches(3.0))
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = COLORS["secondary"]
+        shape.line.color.rgb = color
+        shape.line.width = Pt(3)
+
+        # Colored top accent bar
+        bar = slide.shapes.add_shape(1, Inches(x), Inches(1.25), Inches(2.2), Inches(0.06))
+        bar.fill.solid()
+        bar.fill.fore_color.rgb = color
+        bar.line.color.rgb = color
+
+        # Name
+        add_body(slide, name, x + 0.12, 1.38, 2.0, 0.25, size=10, bold=True, color=COLORS["primary"])
+        # Lift (big number)
+        add_body(slide, lift, x + 0.12, 1.62, 2.0, 0.42, size=28, bold=True, color=color)
+        # Link label
+        add_body(slide, link_label, x + 0.12, 2.06, 2.0, 0.22, size=9, bold=True, color=COLORS["primary"])
+        # KPIs
+        add_body(slide, kpis, x + 0.12, 2.35, 2.0, 0.9, size=9, color=COLORS["text_dark"])
+        # Cycle stages
+        add_body(slide, stages, x + 0.12, 3.5, 2.0, 0.4, size=8, color=COLORS["text_muted"])
+
+        # Arrow between cards
+        if i < 3:
+            add_body(slide, "→", x + 2.22, 2.2, 0.2, 0.3, size=16, bold=True, color=COLORS["text_light"])
+
+    # Spillover text
+    add_body(slide, "Flywheel spillover: Adv→User (30%)  ·  User→Platform (40%)  ·  Platform→Emp (25%)  ·  Emp→Adv (35%)",
+             0.5, 4.5, 9, 0.3, size=9, color=COLORS["secondary"])
+    add_source_footer(slide, "Strategic Planning & Revenue Analysis | Full-Funnel AI Efficiency Model", dark_bg=True)
+
+    # ── Slide 14: Stakeholder Deep-Dive — Advertiser & User ──
+    slide = make_slide(prs)
+    add_takeaway_title(slide, "Advertisers gain +28% from AI creative and targeting; users see a more modest +8% from relevance improvements")
+
+    # Left: Advertiser deep-dive
+    add_body(slide, "ADVERTISER EFFICIENCY", 0.5, 1.0, 4.3, 0.3, size=11, bold=True, color=COLORS["accent"])
+    # Advertiser ads cycle stages
+    adv_stages = [
+        ("Campaign Planning", "30%", "85%", "+55pp", "AI audience insights, budget optimization"),
+        ("Creative Production", "20%", "80%", "+60pp", "Generative ad creation, A/B at scale"),
+        ("Measurement", "35%", "90%", "+55pp", "AI attribution, incrementality testing"),
+    ]
+    for j, (stage_name, base, ceiling, gain, desc) in enumerate(adv_stages):
+        sy = 1.4 + j * 0.55
+        add_body(slide, f"{stage_name}: {base} → {ceiling}", 0.5, sy, 2.5, 0.22, size=10, bold=True, color=COLORS["text_dark"])
+        add_body(slide, gain, 3.1, sy, 0.6, 0.22, size=10, bold=True, color=COLORS["accent"])
+        add_body(slide, desc, 0.5, sy + 0.22, 4.0, 0.22, size=8, color=COLORS["text_muted"])
+
+    # Advertiser segments
+    add_body(slide, "Segment Lift", 0.5, 3.2, 2, 0.25, size=10, bold=True, color=COLORS["primary"])
+    adv_segs = [("SMB (42%)", "+35%"), ("Mid-Market (28%)", "+28%"), ("Enterprise (20%)", "+18%"), ("Agency (10%)", "+30%")]
+    for j, (seg, lift) in enumerate(adv_segs):
+        sy = 3.5 + j * 0.33
+        add_body(slide, seg, 0.5, sy, 2.2, 0.25, size=9, color=COLORS["text_dark"])
+        add_body(slide, lift, 2.8, sy, 0.8, 0.25, size=10, bold=True, color=COLORS["accent"])
+
+    # Right: User deep-dive
+    add_body(slide, "USER EFFICIENCY", 5.2, 1.0, 4.3, 0.3, size=11, bold=True, color=COLORS["green"])
+    usr_stages = [
+        ("Ad Relevance", "40%", "88%", "+48pp", "Predictive relevance scoring, fatigue reduction"),
+        ("Experience Quality", "25%", "70%", "+45pp", "Native AI formats, deep personalization"),
+        ("Content Trust", "50%", "85%", "+35pp", "Automated moderation, brand safety"),
+    ]
+    for j, (stage_name, base, ceiling, gain, desc) in enumerate(usr_stages):
+        sy = 1.4 + j * 0.55
+        add_body(slide, f"{stage_name}: {base} → {ceiling}", 5.2, sy, 2.5, 0.22, size=10, bold=True, color=COLORS["text_dark"])
+        add_body(slide, gain, 7.8, sy, 0.6, 0.22, size=10, bold=True, color=COLORS["green"])
+        add_body(slide, desc, 5.2, sy + 0.22, 4.0, 0.22, size=8, color=COLORS["text_muted"])
+
+    # User segments
+    add_body(slide, "Segment Lift", 5.2, 3.2, 2, 0.25, size=10, bold=True, color=COLORS["primary"])
+    usr_segs = [("DAU Core (55%)", "+6%"), ("MAU Casual (30%)", "+10%"), ("New/Reactivated (10%)", "+12%"), ("Commerce-Intent (5%)", "+15%")]
+    for j, (seg, lift) in enumerate(usr_segs):
+        sy = 3.5 + j * 0.33
+        add_body(slide, seg, 5.2, sy, 2.2, 0.25, size=9, color=COLORS["text_dark"])
+        add_body(slide, lift, 7.5, sy, 0.8, 0.25, size=10, bold=True, color=COLORS["green"])
+
+    # Divider
+    shape = slide.shapes.add_shape(1, Inches(4.85), Inches(1.0), Inches(0.02), Inches(3.85))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = RGBColor(0xE2, 0xE8, 0xF0)
+    shape.line.fill.background()
+
+    add_source_footer(slide, "Strategic Planning & Revenue Analysis | Ads Cycle Efficiency by Stakeholder")
+
+    # ── Slide 15: Stakeholder Deep-Dive — Platform & Employee ──
+    slide = make_slide(prs)
+    add_takeaway_title(slide, "Platform efficiency drives +18% revenue with 6pp margin expansion; employees achieve 3x throughput via AI copilots")
+
+    # Left: Platform deep-dive
+    add_body(slide, "PLATFORM EFFICIENCY", 0.5, 1.0, 4.3, 0.3, size=11, bold=True, color=RGBColor(0x8B, 0x5C, 0xF6))
+    plat_stages = [
+        ("Ad Delivery", "45%", "92%", "+47pp", "Smart bidding, auction fill rate optimization"),
+        ("Infra Cost", "35%", "85%", "+50pp", "Model distillation, quantization, edge inference"),
+        ("Moderation", "30%", "88%", "+58pp", "Automated content review, 3x approval speed"),
+    ]
+    for j, (stage_name, base, ceiling, gain, desc) in enumerate(plat_stages):
+        sy = 1.4 + j * 0.55
+        add_body(slide, f"{stage_name}: {base} → {ceiling}", 0.5, sy, 2.5, 0.22, size=10, bold=True, color=COLORS["text_dark"])
+        add_body(slide, gain, 3.1, sy, 0.6, 0.22, size=10, bold=True, color=RGBColor(0x8B, 0x5C, 0xF6))
+        add_body(slide, desc, 0.5, sy + 0.22, 4.0, 0.22, size=8, color=COLORS["text_muted"])
+
+    # Platform segments
+    add_body(slide, "Segment Lift", 0.5, 3.2, 2, 0.25, size=10, bold=True, color=COLORS["primary"])
+    plat_segs = [("Auction Engine (30%)", "+22%"), ("Model Serving (35%)", "+45%"), ("Content Systems (20%)", "+38%"), ("Data Pipeline (15%)", "+25%")]
+    for j, (seg, lift) in enumerate(plat_segs):
+        sy = 3.5 + j * 0.33
+        add_body(slide, seg, 0.5, sy, 2.5, 0.25, size=9, color=COLORS["text_dark"])
+        add_body(slide, lift, 3.1, sy, 0.8, 0.25, size=10, bold=True, color=RGBColor(0x8B, 0x5C, 0xF6))
+
+    # Margin callout — shifted right for margin
+    shape = slide.shapes.add_shape(1, Inches(0.5), Inches(4.85), Inches(4.2), Inches(0.35))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = RGBColor(0x8B, 0x5C, 0xF6)
+    shape.line.fill.background()
+    add_body(slide, "Additional margin expansion: +6 percentage points by 2030", 0.65, 4.87, 3.9, 0.3, size=9, bold=True, color=COLORS["text_light"])
+
+    # Right: Employee deep-dive
+    add_body(slide, "EMPLOYEE EFFICIENCY", 5.2, 1.0, 4.3, 0.3, size=11, bold=True, color=RGBColor(0xF5, 0x9E, 0x0B))
+    emp_stages = [
+        ("Ad Review", "25%", "82%", "+57pp", "AI copilot for policy compliance, 3x throughput"),
+        ("Advertiser Support", "20%", "78%", "+58pp", "Ticket triage + AI responses, 60% deflection"),
+        ("Engineering", "15%", "75%", "+60pp", "Code generation, automated testing, velocity"),
+    ]
+    for j, (stage_name, base, ceiling, gain, desc) in enumerate(emp_stages):
+        sy = 1.4 + j * 0.55
+        add_body(slide, f"{stage_name}: {base} → {ceiling}", 5.2, sy, 2.5, 0.22, size=10, bold=True, color=COLORS["text_dark"])
+        add_body(slide, gain, 7.8, sy, 0.6, 0.22, size=10, bold=True, color=RGBColor(0xF5, 0x9E, 0x0B))
+        add_body(slide, desc, 5.2, sy + 0.22, 4.0, 0.22, size=8, color=COLORS["text_muted"])
+
+    # Employee segments
+    add_body(slide, "Segment Lift", 5.2, 3.2, 2, 0.25, size=10, bold=True, color=COLORS["primary"])
+    emp_segs = [("Ad Review Team (35%)", "+57%"), ("Support & Success (25%)", "+48%"), ("Product & Eng (25%)", "+40%"), ("Data Science (15%)", "+32%")]
+    for j, (seg, lift) in enumerate(emp_segs):
+        sy = 3.5 + j * 0.33
+        add_body(slide, seg, 5.2, sy, 2.5, 0.25, size=9, color=COLORS["text_dark"])
+        add_body(slide, lift, 7.8, sy, 0.8, 0.25, size=10, bold=True, color=RGBColor(0xF5, 0x9E, 0x0B))
+
+    # Cost callout — adjusted for margin
+    shape = slide.shapes.add_shape(1, Inches(5.3), Inches(4.85), Inches(4.2), Inches(0.35))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = RGBColor(0xF5, 0x9E, 0x0B)
+    shape.line.fill.background()
+    add_body(slide, "Cost per $1B revenue managed: -35% by 2030", 5.45, 4.87, 3.9, 0.3, size=9, bold=True, color=COLORS["text_dark"])
+
+    # Divider
+    shape = slide.shapes.add_shape(1, Inches(4.85), Inches(1.0), Inches(0.02), Inches(4.25))
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = RGBColor(0xE2, 0xE8, 0xF0)
+    shape.line.fill.background()
+
+    add_source_footer(slide, "Strategic Planning & Revenue Analysis | Platform & Employee Efficiency Model")
+
+    # ── Slide 15: Strategic Implications (was 13) ──
     slide = make_slide(prs, dark=True)
     add_takeaway_title(slide, "Four strategic imperatives emerge from the analysis", dark_bg=True)
 
@@ -499,7 +677,7 @@ def create_presentation():
         p.font.size = Pt(9)
         p.font.color.rgb = COLORS["text_dark"]
 
-    # ── Slide 14: Appendix — Key Assumptions ──
+    # ── Slide 16: Appendix — Key Assumptions ──
     slide = make_slide(prs)
     add_takeaway_title(slide, "Appendix A: Key assumptions and data sources underlying the forecast")
 
@@ -544,7 +722,7 @@ def create_presentation():
 
     add_source_footer(slide, "Source: SEC 10-K filings (2019-2024), eMarketer, proprietary models")
 
-    # ── Slide 15: Appendix — Forecasting Algorithm ──
+    # ── Slide 17: Appendix — Forecasting Algorithm ──
     slide = make_slide(prs)
     add_takeaway_title(slide, "Appendix B: Forecasting algorithm — ensemble of four statistical models")
 
@@ -583,12 +761,184 @@ def create_presentation():
 
     add_source_footer(slide, "Full model code and configuration available at github.com/revenue-horizon")
 
-    # ── Slide 16: Appendix — Sensitivity & Correlation ──
+    # ── Slide 18: Appendix — Sensitivity & Correlation ──
     slide = make_slide(prs)
     add_takeaway_title(slide, "Appendix C: Regulatory drag and privacy signal loss are the widest uncertainty bands in the forecast")
     add_chart(slide, "sensitivity_tornado.png", x=0.3, y=1.1, w=4.5, h=4.0)
     add_chart(slide, "monte_carlo_distribution.png", x=5.0, y=1.1, w=4.5, h=4.0)
     add_source_footer(slide, "Source: One-at-a-time sensitivity analysis (±1σ perturbation), correlated Monte Carlo (10,000 runs)")
+
+    # ── Slide 19: Appendix D — AI Efficiency Flywheel Model ──
+    slide = make_slide(prs)
+    add_takeaway_title(slide, "Appendix D: AI efficiency flywheel uses Bass Diffusion adoption with cross-stakeholder spillover coefficients")
+
+    # Model specification (left side)
+    add_body(slide, "MODEL SPECIFICATION", 0.5, 1.0, 4.3, 0.3, size=11, bold=True, color=COLORS["accent"])
+
+    spec_text = (
+        "Per-stakeholder efficiency:\n"
+        "  E_s(t) = base_s + (ceiling_s - base_s) × F(t; p_s, q_s)\n\n"
+        "Bass Diffusion adoption:\n"
+        "  F(t) = [1 - e^{-(p+q)t}] / [1 + (q/p)e^{-(p+q)t}]\n\n"
+        "Flywheel multiplier with spillovers:\n"
+        "  M_s(t) = E_s(t) × (1 + Σ_{k→s} α_{k→s} × E_k(t))\n\n"
+        "Revenue impact:\n"
+        "  ΔR(t) = Σ_s  R_base(t) × w_s × (M_s(t) - M_s(0))\n"
+        "  w_s = stakeholder weight in revenue chain"
+    )
+    add_body(slide, spec_text, 0.5, 1.35, 4.3, 3.6, size=9, color=COLORS["text_dark"])
+
+    # Spillover matrix (right side)
+    add_body(slide, "SPILLOVER COEFFICIENT MATRIX", 5.2, 1.0, 4.3, 0.3, size=11, bold=True, color=COLORS["primary"])
+
+    spillover_data = [
+        ["From \\ To", "Adv", "User", "Platform", "Employee"],
+        ["Advertiser", "—", "0.30", "—", "—"],
+        ["User", "—", "—", "0.40", "—"],
+        ["Platform", "—", "—", "—", "0.25"],
+        ["Employee", "0.35", "—", "—", "—"],
+    ]
+    sp_rows = len(spillover_data)
+    sp_cols = len(spillover_data[0])
+    sp_table = slide.shapes.add_table(sp_rows, sp_cols, Inches(5.2), Inches(1.4), Inches(4.3), Inches(1.7)).table
+    sp_col_w = [Inches(1.1), Inches(0.8), Inches(0.8), Inches(0.8), Inches(0.8)]
+    for ci, cw in enumerate(sp_col_w):
+        sp_table.columns[ci].width = cw
+
+    for ri, row in enumerate(spillover_data):
+        for ci, text in enumerate(row):
+            cell = sp_table.cell(ri, ci)
+            cell.text = text
+            if ri == 0 or ci == 0:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = COLORS["primary"]
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.color.rgb = COLORS["text_light"]
+                        r.font.bold = True
+                        r.font.size = Pt(9)
+            else:
+                if ri % 2 == 0:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = RGBColor(0xF0, 0xF4, 0xF8)
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.color.rgb = COLORS["accent"] if text not in ("—", "") else COLORS["text_muted"]
+                        r.font.size = Pt(9)
+                        r.font.bold = text not in ("—", "")
+                    p.alignment = PP_ALIGN.CENTER
+
+    # Bass parameters table
+    add_body(slide, "BASS DIFFUSION PARAMETERS", 5.2, 3.3, 4.3, 0.3, size=10, bold=True, color=COLORS["primary"])
+    bass_data = [
+        ["Stakeholder", "p (innov)", "q (imit)", "Ceiling"],
+        ["Advertiser", "0.035", "0.40", "85%"],
+        ["User", "0.020", "0.30", "70%"],
+        ["Platform", "0.040", "0.45", "92%"],
+        ["Employee", "0.030", "0.38", "82%"],
+    ]
+    bp_rows = len(bass_data)
+    bp_cols = len(bass_data[0])
+    bp_table = slide.shapes.add_table(bp_rows, bp_cols, Inches(5.2), Inches(3.65), Inches(4.3), Inches(1.5)).table
+    bp_col_w = [Inches(1.2), Inches(1.0), Inches(1.0), Inches(1.1)]
+    for ci, cw in enumerate(bp_col_w):
+        bp_table.columns[ci].width = cw
+
+    for ri, row in enumerate(bass_data):
+        for ci, text in enumerate(row):
+            cell = bp_table.cell(ri, ci)
+            cell.text = text
+            if ri == 0:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = COLORS["primary"]
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.color.rgb = COLORS["text_light"]
+                        r.font.bold = True
+                        r.font.size = Pt(9)
+            else:
+                if ri % 2 == 0:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = RGBColor(0xF0, 0xF4, 0xF8)
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.color.rgb = COLORS["text_dark"]
+                        r.font.size = Pt(9)
+
+    add_source_footer(slide, "See forecasting_engine.py → EfficiencyFlywheelModel for implementation details")
+
+    # ── Slide 20: Appendix E — Segment-Level Efficiency Parameters ──
+    slide = make_slide(prs)
+    add_takeaway_title(slide, "Appendix E: Full segment-level efficiency parameters across all four stakeholder groups")
+
+    # Full parameter table — all 16 segments across 4 stakeholders
+    seg_data = [
+        ["Stakeholder", "Segment", "Share", "Lift %", "Ads Cycle Stage"],
+        ["Advertiser", "SMB", "42%", "+35%", "Planning → Creative → Measurement"],
+        ["Advertiser", "Mid-Market", "28%", "+28%", "Creative → Measurement"],
+        ["Advertiser", "Enterprise", "20%", "+18%", "Measurement → Planning"],
+        ["Advertiser", "Agency", "10%", "+30%", "Creative → Planning"],
+        ["User", "DAU Core", "55%", "+6%", "Relevance → Experience"],
+        ["User", "MAU Casual", "30%", "+10%", "Experience → Trust"],
+        ["User", "New/Reactivated", "10%", "+12%", "Relevance → Trust"],
+        ["User", "Commerce-Intent", "5%", "+15%", "Experience → Relevance"],
+        ["Platform", "Auction Engine", "30%", "+22%", "Ad Delivery optimization"],
+        ["Platform", "Model Serving", "35%", "+45%", "Infra Cost reduction"],
+        ["Platform", "Content Systems", "20%", "+38%", "Moderation → Delivery"],
+        ["Platform", "Data Pipeline", "15%", "+25%", "Infra Cost → Delivery"],
+        ["Employee", "Ad Review Team", "35%", "+57%", "Policy compliance copilot"],
+        ["Employee", "Support & Success", "25%", "+48%", "Ticket triage + AI response"],
+        ["Employee", "Product & Eng", "25%", "+40%", "Code gen + automated testing"],
+        ["Employee", "Data Science", "15%", "+32%", "Model monitoring + AutoML"],
+    ]
+
+    sg_rows = len(seg_data)
+    sg_cols = len(seg_data[0])
+    sg_table = slide.shapes.add_table(sg_rows, sg_cols, Inches(0.3), Inches(1.05), Inches(9.4), Inches(4.1)).table
+    sg_col_w = [Inches(1.3), Inches(1.6), Inches(0.8), Inches(0.8), Inches(4.9)]
+    for ci, cw in enumerate(sg_col_w):
+        sg_table.columns[ci].width = cw
+
+    # Color map for stakeholder rows
+    stakeholder_colors = {
+        "Advertiser": COLORS["accent"],
+        "User": COLORS["green"],
+        "Platform": RGBColor(0x8B, 0x5C, 0xF6),
+        "Employee": RGBColor(0xF5, 0x9E, 0x0B),
+    }
+
+    for ri, row in enumerate(seg_data):
+        for ci, text in enumerate(row):
+            cell = sg_table.cell(ri, ci)
+            cell.text = text
+            if ri == 0:
+                cell.fill.solid()
+                cell.fill.fore_color.rgb = COLORS["primary"]
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.color.rgb = COLORS["text_light"]
+                        r.font.bold = True
+                        r.font.size = Pt(8)
+            else:
+                # Alternate row shading within stakeholder groups
+                group_idx = (ri - 1) // 4
+                if group_idx % 2 == 1:
+                    cell.fill.solid()
+                    cell.fill.fore_color.rgb = RGBColor(0xF0, 0xF4, 0xF8)
+                for p in cell.text_frame.paragraphs:
+                    for r in p.runs:
+                        r.font.size = Pt(8)
+                        # Color the stakeholder name and lift columns
+                        if ci == 0:
+                            r.font.color.rgb = stakeholder_colors.get(text, COLORS["text_dark"])
+                            r.font.bold = True
+                        elif ci == 3:
+                            r.font.color.rgb = stakeholder_colors.get(row[0], COLORS["text_dark"])
+                            r.font.bold = True
+                        else:
+                            r.font.color.rgb = COLORS["text_dark"]
+
+    add_source_footer(slide, "Source: AI efficiency model calibrated to observed automation adoption rates across digital advertising platforms")
 
     # Save
     prs.save(str(OUTPUT_PATH))
@@ -598,4 +948,4 @@ def create_presentation():
 if __name__ == "__main__":
     create_presentation()
     print(f"\n✓ Presentation created: {OUTPUT_PATH}")
-    print(f"✓ 16 slides (14 content + 2 algorithm appendix)")
+    print(f"✓ 20 slides (15 content + 5 appendix)")

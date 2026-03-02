@@ -121,3 +121,7 @@ All 100+ parameters are configurable via `config/default_config.json`. Key secti
 ## Data Sources
 
 Historical advertising revenue data sourced from public SEC 10-K filings (2019-2024). Market sizing estimates based on industry analyst reports. All forward projections are model-generated.
+
+## License
+
+MIT

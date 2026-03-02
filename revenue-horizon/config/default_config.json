@@ -224,6 +224,200 @@
       "privacy_signal_loss": {"type": "normal", "std": 0.05}
     }
   },
+  "efficiency_flywheel": {
+    "description": "AI efficiency lever across the full ads cycle, modeled as a 4-stakeholder virtuous flywheel",
+    "stakeholders": {
+      "advertiser": {
+        "label": "Advertisers",
+        "description": "Demand-side efficiency: campaign planning, creative automation, measurement",
+        "ads_cycle_stages": {
+          "planning": {"base_efficiency_2024": 0.30, "ai_ceiling": 0.85, "lift_pct": 0.55, "description": "AI audience insights, budget optimization"},
+          "creative": {"base_efficiency_2024": 0.20, "ai_ceiling": 0.80, "lift_pct": 0.60, "description": "Generative ad creation, A/B testing at scale"},
+          "measurement": {"base_efficiency_2024": 0.35, "ai_ceiling": 0.90, "lift_pct": 0.55, "description": "AI attribution, incrementality testing"}
+        },
+        "total_stakeholder_lift_2030": 0.28,
+        "revenue_multiplier_2030": 1.28,
+        "efficiency_adoption_p": 0.04,
+        "efficiency_adoption_q": 0.40,
+        "segments": {
+          "smb": {
+            "label": "Small & Medium Business",
+            "share_of_advertiser_revenue": 0.42,
+            "lift_pct": 0.35,
+            "primary_channels": ["ai_creative", "ai_messaging"],
+            "notes": "Highest relative lift: AI creative removes production barrier, SMBs adopt fastest"
+          },
+          "mid_market": {
+            "label": "Mid-Market",
+            "share_of_advertiser_revenue": 0.28,
+            "lift_pct": 0.28,
+            "primary_channels": ["ai_targeting", "ai_creative", "ai_measurement"],
+            "notes": "Moderate lift from targeting + measurement; already have some in-house capability"
+          },
+          "enterprise": {
+            "label": "Enterprise / Large Advertisers",
+            "share_of_advertiser_revenue": 0.20,
+            "lift_pct": 0.18,
+            "primary_channels": ["ai_targeting", "ai_infrastructure", "ai_measurement"],
+            "notes": "Lowest relative lift but highest absolute $: already sophisticated, incremental gains"
+          },
+          "agencies": {
+            "label": "Agency / Reseller",
+            "share_of_advertiser_revenue": 0.10,
+            "lift_pct": 0.30,
+            "primary_channels": ["ai_creative", "ai_targeting"],
+            "notes": "High lift from creative automation at scale; manage hundreds of client accounts"
+          }
+        },
+        "kpi_metrics": {
+          "campaign_setup_time_reduction": 0.40,
+          "creative_variants_multiplier": 5.0,
+          "roas_visibility_improvement": 0.25
+        }
+      },
+      "user": {
+        "label": "Users",
+        "description": "Engagement-side efficiency: ad relevance, experience quality, trust",
+        "ads_cycle_stages": {
+          "targeting": {"base_efficiency_2024": 0.40, "ai_ceiling": 0.88, "lift_pct": 0.48, "description": "Relevance scoring, lower ad fatigue"},
+          "experience": {"base_efficiency_2024": 0.25, "ai_ceiling": 0.70, "lift_pct": 0.45, "description": "Native formats, personalization depth"},
+          "trust": {"base_efficiency_2024": 0.50, "ai_ceiling": 0.85, "lift_pct": 0.35, "description": "Content moderation, brand safety"}
+        },
+        "total_stakeholder_lift_2030": 0.08,
+        "revenue_multiplier_2030": 1.08,
+        "efficiency_adoption_p": 0.03,
+        "efficiency_adoption_q": 0.32,
+        "segments": {
+          "dau_core": {
+            "label": "Daily Active Core Users",
+            "share_of_user_base": 0.55,
+            "lift_pct": 0.06,
+            "notes": "Incremental: already highly engaged, AI improves ad relevance slightly"
+          },
+          "mau_casual": {
+            "label": "Monthly Active Casual Users",
+            "share_of_user_base": 0.30,
+            "lift_pct": 0.10,
+            "notes": "Moderate lift: AI-personalized ads reduce fatigue, extend session time"
+          },
+          "new_user_growth": {
+            "label": "New / Reactivated Users",
+            "share_of_user_base": 0.10,
+            "lift_pct": 0.12,
+            "notes": "Highest relative lift: AI onboarding, personalization drives retention"
+          },
+          "commerce_users": {
+            "label": "Commerce-Intent Users",
+            "share_of_user_base": 0.05,
+            "lift_pct": 0.15,
+            "notes": "Highest monetization lift: AI shopping assistant drives conversion"
+          }
+        },
+        "kpi_metrics": {
+          "ctr_improvement": 0.35,
+          "engagement_depth_lift": 0.20,
+          "ad_fatigue_reduction": 0.30
+        }
+      },
+      "platform": {
+        "label": "Platform",
+        "description": "Infrastructure efficiency: auction optimization, delivery, cost per query",
+        "ads_cycle_stages": {
+          "delivery": {"base_efficiency_2024": 0.45, "ai_ceiling": 0.92, "lift_pct": 0.47, "description": "Smart bidding, fill rate optimization"},
+          "infrastructure": {"base_efficiency_2024": 0.35, "ai_ceiling": 0.85, "lift_pct": 0.50, "description": "Model serving efficiency, cost per 1K predictions"},
+          "moderation": {"base_efficiency_2024": 0.30, "ai_ceiling": 0.88, "lift_pct": 0.58, "description": "Automated content review, ad approval speed"}
+        },
+        "total_stakeholder_lift_2030": 0.18,
+        "revenue_multiplier_2030": 1.18,
+        "margin_expansion_2030": 0.06,
+        "efficiency_adoption_p": 0.035,
+        "efficiency_adoption_q": 0.38,
+        "segments": {
+          "auction_engine": {
+            "label": "Auction & Bidding Engine",
+            "share_of_platform_cost": 0.30,
+            "lift_pct": 0.22,
+            "notes": "Highest revenue lift: smarter auctions → better fill rate + CPM optimization"
+          },
+          "serving_infra": {
+            "label": "Model Serving & Inference",
+            "share_of_platform_cost": 0.35,
+            "lift_pct": 0.45,
+            "notes": "Highest cost reduction: distillation, quantization, edge inference"
+          },
+          "content_systems": {
+            "label": "Content & Safety Systems",
+            "share_of_platform_cost": 0.20,
+            "lift_pct": 0.38,
+            "notes": "High lift from automated moderation: 3x throughput, lower false positive rate"
+          },
+          "data_pipeline": {
+            "label": "Data Pipeline & Analytics",
+            "share_of_platform_cost": 0.15,
+            "lift_pct": 0.25,
+            "notes": "Moderate lift: automated ETL, anomaly detection, reporting"
+          }
+        },
+        "kpi_metrics": {
+          "fill_rate_improvement": 0.08,
+          "cost_per_1k_predictions_reduction": 0.45,
+          "ad_approval_speed_multiplier": 3.0
+        }
+      },
+      "employee": {
+        "label": "Internal Employees",
+        "description": "Operational efficiency: AI copilots for review, support automation, dev velocity",
+        "ads_cycle_stages": {
+          "ad_review": {"base_efficiency_2024": 0.25, "ai_ceiling": 0.82, "lift_pct": 0.57, "description": "AI copilot for policy review throughput"},
+          "support": {"base_efficiency_2024": 0.20, "ai_ceiling": 0.78, "lift_pct": 0.58, "description": "Automated advertiser support, ticket deflection"},
+          "engineering": {"base_efficiency_2024": 0.15, "ai_ceiling": 0.75, "lift_pct": 0.60, "description": "Code generation, testing, feature velocity"}
+        },
+        "total_stakeholder_lift_2030": 0.22,
+        "cost_per_billion_reduction_2030": 0.35,
+        "efficiency_adoption_p": 0.05,
+        "efficiency_adoption_q": 0.45,
+        "segments": {
+          "ad_reviewers": {
+            "label": "Ad Review & Policy Team",
+            "share_of_ads_headcount": 0.35,
+            "lift_pct": 0.57,
+            "notes": "Highest lift: AI copilot for policy compliance → 3x throughput per reviewer"
+          },
+          "advertiser_support": {
+            "label": "Advertiser Support & Success",
+            "share_of_ads_headcount": 0.25,
+            "lift_pct": 0.48,
+            "notes": "High lift: automated ticket triage, AI-generated responses, 60% deflection rate"
+          },
+          "product_engineering": {
+            "label": "Product & Engineering",
+            "share_of_ads_headcount": 0.25,
+            "lift_pct": 0.40,
+            "notes": "Moderate-high lift: code generation, automated testing, faster feature velocity"
+          },
+          "data_science_analytics": {
+            "label": "Data Science & Analytics",
+            "share_of_ads_headcount": 0.15,
+            "lift_pct": 0.32,
+            "notes": "Moderate lift: automated insights, model training pipelines, anomaly detection"
+          }
+        },
+        "kpi_metrics": {
+          "review_throughput_multiplier": 3.0,
+          "ticket_deflection_rate": 0.60,
+          "dev_velocity_improvement": 0.40
+        }
+      }
+    },
+    "spillover_coefficients": {
+      "advertiser_to_user": 0.30,
+      "user_to_platform": 0.40,
+      "platform_to_employee": 0.25,
+      "employee_to_advertiser": 0.35
+    },
+    "flywheel_compound_start_year": 2025,
+    "flywheel_acceleration_per_cycle": 0.05
+  },
   "seasonality": {
     "quarterly_factors": {
       "Q1": 0.88,
